@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+# LinkedIn Crawler with LinkedIn API
+import oauth2 as oauth
+import httplib2
+import time, os, simplejson
+import json
+ 
+# Fill the keys and secrets you retrieved after registering your app
+
+consumer_key  = 'CONSUMER KEY'
+consumer_secret = 'CONSUMER SECRET'
+user_token = 'USER TOKEN'
+user_secret = 'USER SECRET'
+
+ 
+# Use your API key and secret to instantiate consumer object
+consumer = oauth.Consumer(consumer_key, consumer_secret)
+ 
+# Use the consumer object to initialize the client object
+client = oauth.Client(consumer)
+ 
+# Use your developer token and secret to instantiate access token object
+access_token = oauth.Token(
+            key=user_token,
+            secret=user_secret)
+ 
+client = oauth.Client(consumer, access_token)
+ 
+# Make call to LinkedIn to retrieve your data
+
+connections = []
+for no in xrange(0, 1601): #The total number of Reults is 1601
+    if no%10 == 0:
+        x = client.request("https://api.linkedin.com/v1/company-search:(companies:(id,name,universal-name,website-url,company-type,industries,blog-rss-url,twitter-id,employee-count-range,locations),num-results)?hq-only=true&facet=location,in&facet=industry,104&start=" + str(no) + "&count=10&format=json", "GET", "")
+# THE SEARCH QUERY STRUCTURE::
+
+#https://api.linkedin.com/v1/company-search: company-search MEANS WE ARE USING THE "Company profile fields" AND SEARCHING FOR COMPANIES
+
+#(companies:(id,name,universal-name,website-url,company-type,industries,blog-rss-url,twitter-id,employee-count-range,locations),num-results)
+#THE ABOVE TELLS THE REQUEST TO FETCH THE COMPANY ID, NAME, UNIVERSAL-NAME, WEBSITE-URL, COMPANY-TYPE, INDUSTRIES, BLOG-RSS-URL, TWITTER-ID, EMPLOYEE-COUNT-RANGE AND ALL THE COMPANY LOCATIONS. ALSO FETCH THE TOTAL NUMBER OF RESULTS
+
+#?hq-only=true&facet=location,in&facet=industry,104&start=" + str(no) + "&count=10&format=json", "GET", ""
+# THE ABOVE TELLS THE REQUEST TO SEARCH FOR THE COMPANIES SATISFYING THE CONDITION THAT
+# 1. THE COMPANY HAS A HEADQUARTER AND FETCH ITS LOCATION.
+# 2. THE COMPANY HAS THE INDUSTRY CODE '104' WHICH STANDS FOR STAFFING AND RECRUITING.
+# 3. START FETCHING RESULT NO
+# 4. PAGE HAS 10 RESULTS
+# 5. FETCH THE DATA AS A JSON STRING USING THE METHOD "GET"
+
+
+
+# Remove the Header 
+connections.append(x[1])
+
+# Write fetched data in json format
+f = open('linkedin2_data1.json','a')
+
+f.write(json.dumps(connections, indent=2))
+
+f.close()
